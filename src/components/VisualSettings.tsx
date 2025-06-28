@@ -2,19 +2,36 @@
 
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
+import { Slider } from "./ui/slider";
 import { Separator } from "./ui/separator";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { Badge } from "./ui/badge";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Checkbox } from "./ui/checkbox";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { ScrollArea } from "./ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
+import { Calendar } from "./ui/calendar";
+import { Progress } from "./ui/progress";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "./ui/breadcrumb";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "./ui/context-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { BarChart3, FileText, Settings, Users, Package, Palette, Type, Eye, Download, Upload, RotateCcw, CheckCircle, AlertCircle, Copy, RefreshCw, Sliders, Layout, Zap, CircleIcon, Square, Triangle, Star, Heart, Smile, Sun, Moon } from "lucide-react";
-import logoImage from 'figma:asset/aa6dfb22a361d25713cba631ca17f4edeae6d718.png';
+import { BarChart3, FileText, Settings, Users, Package, Palette, Type, Eye, RotateCcw, CheckCircle, AlertCircle, Copy, Layout, Zap, CircleIcon, Square, Triangle, Star, Heart, Smile, Sun, Moon } from "lucide-react";
 import { useVisualSettings } from "./VisualSettingsContext";
 import { useTheme } from "./ThemeContext";
 
@@ -25,946 +42,539 @@ interface VisualSettingsProps {
 }
 
 export function VisualSettings({ onLogout, onNavigateToSection, activeSection }: VisualSettingsProps) {
-  const { settings, updateSettings, resetToDefault, exportSettings, importSettings } = useVisualSettings();
   const { theme, setTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState("colors");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [error, setError] = useState("");
+  const { 
+    fontSize, 
+    setFontSize, 
+    fontFamily, 
+    setFontFamily,
+    colorScheme,
+    setColorScheme,
+    animations,
+    setAnimations,
+    density,
+    setDensity,
+    contrast,
+    setContrast
+  } = useVisualSettings();
+
   const [previewMode, setPreviewMode] = useState(false);
-
-  const menuItems = [
-    { id: "dashboard", icon: BarChart3, label: "Dashboard" },
-    { id: "products", icon: Package, label: "Produtos Monitorados" },
-    { id: "reports", icon: FileText, label: "Relatórios" },
-    { id: "users", icon: Users, label: "Usuários" },
-    { id: "profile", icon: Settings, label: "Perfil" },
-  ];
-
-  const showMessage = (message: string, isError = false) => {
-    if (isError) {
-      setError(message);
-      setSuccessMessage("");
-    } else {
-      setSuccessMessage(message);
-      setError("");
-    }
-    
-    setTimeout(() => {
-      setError("");
-      setSuccessMessage("");
-    }, 3000);
-  };
-
-  const handleColorChange = (colorKey: string, value: string) => {
-    const colorScheme = theme === "dark" ? "darkMode" : "lightMode";
-    updateSettings({
-      [colorScheme]: {
-        ...settings[colorScheme],
-        [colorKey]: value,
-      },
-    });
-  };
-
-  const handleTypographyChange = (category: string, key: string, value: any) => {
-    updateSettings({
-      typography: {
-        ...settings.typography,
-        [category]: {
-          ...settings.typography[category as keyof typeof settings.typography],
-          [key]: value,
-        },
-      },
-    });
-  };
-
-  const handleExportSettings = () => {
-    const settingsJson = exportSettings();
-    navigator.clipboard.writeText(settingsJson).then(() => {
-      showMessage("Configurações copiadas para a área de transferência");
-    }).catch(() => {
-      showMessage("Erro ao copiar configurações", true);
-    });
-  };
-
-  const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        if (importSettings(content)) {
-          showMessage("Configurações importadas com sucesso");
-        } else {
-          showMessage("Erro ao importar configurações", true);
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const handleResetSettings = () => {
-    if (window.confirm("Tem certeza que deseja restaurar todas as configurações para o padrão?")) {
-      resetToDefault();
-      showMessage("Configurações restauradas para o padrão");
-    }
-  };
-
-  const currentColors = theme === "dark" ? settings.darkMode : settings.lightMode;
+  const [selectedComponent, setSelectedComponent] = useState("button");
 
   const fontOptions = [
-    { value: "Open Sans", label: "Open Sans" },
-    { value: "Inter", label: "Inter" },
-    { value: "Roboto", label: "Roboto" },
-    { value: "Poppins", label: "Poppins" },
-    { value: "Lato", label: "Lato" },
-    { value: "Montserrat", label: "Montserrat" },
-    { value: "Source Sans Pro", label: "Source Sans Pro" },
-    { value: "Ubuntu", label: "Ubuntu" },
+    { value: "system", label: "Sistema", description: "Fonte padrão do sistema" },
+    { value: "inter", label: "Inter", description: "Moderna e legível" },
+    { value: "roboto", label: "Roboto", description: "Google Fonts" },
+    { value: "open-sans", label: "Open Sans", description: "Humanista e amigável" },
+    { value: "source-sans", label: "Source Sans Pro", description: "Adobe Fonts" }
   ];
 
-  const iconStyleOptions = [
-    { value: "outline", label: "Contorno", icon: CircleIcon },
-    { value: "filled", label: "Preenchido", icon: Square },
-    { value: "duotone", label: "Duotone", icon: Triangle },
+  const colorSchemes = [
+    { value: "default", label: "Padrão", color: "#16803D" },
+    { value: "blue", label: "Azul", color: "#2563EB" },
+    { value: "purple", label: "Roxo", color: "#7C3AED" },
+    { value: "orange", label: "Laranja", color: "#EA580C" },
+    { value: "red", label: "Vermelho", color: "#DC2626" }
   ];
 
-  const colorLabels = {
-    primary: "Cor Primária",
-    secondary: "Cor Secundária", 
-    accent: "Cor de Destaque",
-    background: "Fundo",
-    foreground: "Texto Principal",
-    muted: "Texto Secundário",
-    border: "Bordas",
-    success: "Sucesso",
-    warning: "Aviso",
-    error: "Erro",
-    info: "Informação"
+  const densityOptions = [
+    { value: "compact", label: "Compacto", description: "Mais informações em menos espaço" },
+    { value: "comfortable", label: "Confortável", description: "Equilíbrio entre espaço e informação" },
+    { value: "spacious", label: "Espaçoso", description: "Mais espaço entre elementos" }
+  ];
+
+  const componentPreviews = {
+    button: (
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <Button>Primário</Button>
+          <Button variant="secondary">Secundário</Button>
+          <Button variant="outline">Contorno</Button>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm">Pequeno</Button>
+          <Button>Médio</Button>
+          <Button size="lg">Grande</Button>
+        </div>
+      </div>
+    ),
+    card: (
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Título do Card</CardTitle>
+          <CardDescription>Descrição do card com informações adicionais</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Conteúdo do card aqui.</p>
+        </CardContent>
+      </Card>
+    ),
+    form: (
+      <div className="space-y-4 w-full max-w-sm">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" placeholder="seu@email.com" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="message">Mensagem</Label>
+          <Textarea id="message" placeholder="Digite sua mensagem..." />
+        </div>
+        <Button className="w-full">Enviar</Button>
+      </div>
+    ),
+    navigation: (
+      <div className="space-y-2">
+        <div className="flex items-center space-x-2 p-2 rounded-md bg-accent">
+          <BarChart3 className="h-4 w-4" />
+          <span className="text-sm">Dashboard</span>
+        </div>
+        <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
+          <Package className="h-4 w-4" />
+          <span className="text-sm">Produtos</span>
+        </div>
+        <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
+          <FileText className="h-4 w-4" />
+          <span className="text-sm">Relatórios</span>
+        </div>
+      </div>
+    )
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-background">
-        <Sidebar className="border-r border-borda-sutil bg-branco-puro">
-          <div className="flex justify-center items-center p-6 border-b border-borda-sutil">
-            <ImageWithFallback
-              src={logoImage}
-              alt="MonitorAgro Logo"
-              className="h-14 w-auto"
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="flex h-16 items-center px-6">
+          <div className="flex items-center space-x-4">
+            <img 
+              src="/logo.png" 
+              alt="MonitorAgro" 
+              className="h-8 w-8"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
+            <div 
+              className="h-8 w-8 bg-verde-folha rounded-md items-center justify-center text-white font-semibold text-sm hidden"
+              style={{ display: 'none' }}
+            >
+              MA
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">MonitorAgro</h1>
+              <p className="text-sm text-muted-foreground">Configurações Visuais</p>
+            </div>
           </div>
           
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-cinza-secundario text-xs uppercase tracking-wider px-3 py-2">
-                Menu Principal
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="px-3">
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        onClick={() => onNavigateToSection(item.id)}
-                        isActive={activeSection === item.id}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                          activeSection === item.id
-                            ? "bg-verde-claro text-verde-folha"
-                            : "text-cinza-texto hover:bg-cinza-claro"
-                        }`}
-                      >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
+          <div className="ml-auto flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPreviewMode(!previewMode)}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              {previewMode ? "Sair do Preview" : "Preview"}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFontSize(14);
+                setFontFamily("system");
+                setColorScheme("default");
+                setAnimations(true);
+                setDensity("comfortable");
+                setContrast("normal");
+              }}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Resetar
+            </Button>
+            
+            <Button onClick={onLogout} variant="outline">
+              Sair
+            </Button>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-branco-puro border-b border-borda-sutil px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="md:hidden" />
-                <div>
-                  <h1 className="text-cinza-texto">Configurações Visuais</h1>
-                  <p className="text-sm text-cinza-secundario">
-                    Personalize a aparência e identidade visual do sistema
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setPreviewMode(!previewMode)}
-                  variant="outline"
-                  size="sm"
-                  className="border-borda-sutil text-cinza-texto hover:bg-cinza-claro"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  {previewMode ? "Sair do Preview" : "Preview"}
-                </Button>
-              </div>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 border-r bg-card h-[calc(100vh-4rem)]">
+          <nav className="p-4 space-y-2">
+            <Button
+              variant={activeSection === "dashboard" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("dashboard")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant={activeSection === "products" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("products")}
+            >
+              <Package className="mr-2 h-4 w-4" />
+              Produtos
+            </Button>
+            <Button
+              variant={activeSection === "reports" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("reports")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Relatórios
+            </Button>
+            <Button
+              variant={activeSection === "users" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("users")}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Usuários
+            </Button>
+            <Button
+              variant={activeSection === "profile" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("profile")}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Perfil
+            </Button>
+            <Button
+              variant="default"
+              className="w-full justify-start"
+            >
+              <Palette className="mr-2 h-4 w-4" />
+              Configurações Visuais
+            </Button>
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Configurações Visuais</h2>
+              <p className="text-muted-foreground">
+                Personalize a aparência e comportamento da interface do MonitorAgro
+              </p>
             </div>
-          </header>
 
-          <main className="flex-1 overflow-y-auto p-6 bg-background">
-            <div className="max-w-6xl mx-auto">
-              {/* Mensagens de feedback */}
-              {successMessage && (
-                <div className="mb-6">
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-700">
-                      {successMessage}
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Configurações */}
+              <div className="lg:col-span-2 space-y-6">
+                <Tabs defaultValue="appearance" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="appearance">Aparência</TabsTrigger>
+                    <TabsTrigger value="typography">Tipografia</TabsTrigger>
+                    <TabsTrigger value="behavior">Comportamento</TabsTrigger>
+                    <TabsTrigger value="accessibility">Acessibilidade</TabsTrigger>
+                  </TabsList>
 
-              {error && (
-                <div className="mb-6">
-                  <Alert variant="destructive" className="bg-red-50 border-red-200">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-700">{error}</AlertDescription>
-                  </Alert>
-                </div>
-              )}
-
-              {/* Abas principais */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
-                  <TabsTrigger value="colors" className="flex items-center gap-2">
-                    <Palette className="w-4 h-4" />
-                    Cores
-                  </TabsTrigger>
-                  <TabsTrigger value="typography" className="flex items-center gap-2">
-                    <Type className="w-4 h-4" />
-                    Tipografia
-                  </TabsTrigger>
-                  <TabsTrigger value="layout" className="flex items-center gap-2">
-                    <Layout className="w-4 h-4" />
-                    Layout
-                  </TabsTrigger>
-                  <TabsTrigger value="transitions" className="flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
-                    Transições
-                  </TabsTrigger>
-                  <TabsTrigger value="export" className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Gerenciar
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Aba Cores */}
-                <TabsContent value="colors" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Seletor de Tema */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm lg:col-span-2">
+                  <TabsContent value="appearance" className="space-y-6">
+                    {/* Tema */}
+                    <Card>
                       <CardHeader>
-                        <CardTitle className="text-cinza-texto flex items-center gap-2">
-                          <Palette className="w-5 h-5" />
-                          Tema do Sistema
+                        <CardTitle className="flex items-center gap-2">
+                          <Sun className="h-5 w-5" />
+                          Tema
                         </CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Escolha entre o modo claro ou escuro
+                        <CardDescription>
+                          Escolha entre tema claro ou escuro
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Modo Claro */}
-                          <div 
-                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                              theme === "light" 
-                                ? "border-verde-folha bg-verde-claro/30" 
-                                : "border-borda-sutil hover:border-verde-folha/50"
-                            }`}
-                            onClick={() => setTheme("light")}
-                          >
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="p-2 bg-yellow-100 rounded-lg">
-                                <Sun className="w-5 h-5 text-yellow-600" />
-                              </div>
-                              <div>
-                                <h3 className="font-medium text-cinza-texto">Modo Claro</h3>
-                                <p className="text-sm text-cinza-secundario">Tema padrão com cores claras</p>
-                              </div>
-                              {theme === "light" && (
-                                <CheckCircle className="w-5 h-5 text-verde-folha ml-auto flex-shrink-0" />
-                              )}
-                            </div>
-                            <div className="bg-white border border-gray-200 rounded p-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-verde-folha rounded-full"></div>
-                                <div className="w-16 h-2 bg-gray-200 rounded"></div>
-                              </div>
-                              <div className="space-y-1">
-                                <div className="w-full h-2 bg-gray-100 rounded"></div>
-                                <div className="w-3/4 h-2 bg-gray-100 rounded"></div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Modo Escuro */}
-                          <div 
-                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                              theme === "dark" 
-                                ? "border-verde-folha bg-verde-claro/30" 
-                                : "border-borda-sutil hover:border-verde-folha/50"
-                            }`}
-                            onClick={() => setTheme("dark")}
-                          >
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="p-2 bg-slate-800 rounded-lg">
-                                <Moon className="w-5 h-5 text-slate-300" />
-                              </div>
-                              <div>
-                                <h3 className="font-medium text-cinza-texto">Modo Escuro</h3>
-                                <p className="text-sm text-cinza-secundario">Ideal para ambientes com pouca luz</p>
-                              </div>
-                              {theme === "dark" && (
-                                <CheckCircle className="w-5 h-5 text-verde-folha ml-auto flex-shrink-0" />
-                              )}
-                            </div>
-                            <div className="bg-slate-800 border border-slate-700 rounded p-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                                <div className="w-16 h-2 bg-slate-600 rounded"></div>
-                              </div>
-                              <div className="space-y-1">
-                                <div className="w-full h-2 bg-slate-700 rounded"></div>
-                                <div className="w-3/4 h-2 bg-slate-700 rounded"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Cores Principais */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto flex items-center gap-2">
-                          <Palette className="w-5 h-5" />
-                          Cores Principais
-                        </CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Configure as cores base do sistema para o tema {theme === "dark" ? "escuro" : "claro"}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {Object.entries(currentColors).map(([key, value]) => (
-                          <div key={key} className="space-y-2">
-                            <Label className="text-cinza-texto">
-                              {colorLabels[key as keyof typeof colorLabels] || key}
+                        <RadioGroup value={theme} onValueChange={setTheme}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="light" id="light" />
+                            <Label htmlFor="light" className="flex items-center gap-2">
+                              <Sun className="h-4 w-4" />
+                              Claro
                             </Label>
-                            <div className="flex items-center gap-3">
-                              <Input
-                                type="color"
-                                value={value}
-                                onChange={(e) => handleColorChange(key, e.target.value)}
-                                className="w-12 h-8 p-0 border-0 rounded cursor-pointer"
-                              />
-                              <Input
-                                type="text"
-                                value={value}
-                                onChange={(e) => handleColorChange(key, e.target.value)}
-                                className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro font-mono text-sm"
-                                placeholder="#000000"
-                              />
-                            </div>
                           </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-
-                    {/* Preview das Cores */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto">Preview das Cores</CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Visualize como as cores ficam aplicadas nos componentes
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Botões de exemplo */}
-                        <div className="space-y-3">
-                          <div className="flex gap-2 flex-wrap">
-                            <Button 
-                              style={{ backgroundColor: currentColors.primary, color: "#ffffff" }}
-                              size="sm"
-                            >
-                              Primário
-                            </Button>
-                            <Button 
-                              variant="outline"
-                              style={{ 
-                                borderColor: currentColors.border,
-                                color: currentColors.foreground,
-                                backgroundColor: currentColors.secondary
-                              }}
-                              size="sm"
-                            >
-                              Secundário
-                            </Button>
-                            <Button 
-                              style={{ 
-                                backgroundColor: currentColors.success,
-                                color: "#ffffff"
-                              }}
-                              size="sm"
-                            >
-                              Sucesso
-                            </Button>
-                          </div>
-                          
-                          {/* Card de exemplo */}
-                          <div 
-                            className="p-4 rounded-lg border"
-                            style={{ 
-                              backgroundColor: currentColors.background,
-                              borderColor: currentColors.border,
-                              color: currentColors.foreground
-                            }}
-                          >
-                            <h3 className="font-semibold mb-2">Card de Exemplo</h3>
-                            <p style={{ color: currentColors.muted }}>
-                              Este é um exemplo de como as cores ficam aplicadas nos componentes do sistema.
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                {/* Aba Tipografia */}
-                <TabsContent value="typography" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Configurações de Fonte */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto flex items-center gap-2">
-                          <Type className="w-5 h-5" />
-                          Configurações de Fonte
-                        </CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Personalize a tipografia do sistema
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {/* Família da Fonte */}
-                        <div className="space-y-2">
-                          <Label className="text-cinza-texto">Família da Fonte</Label>
-                          <Select
-                            value={settings.typography.fontFamily}
-                            onValueChange={(value) => handleTypographyChange("fontFamily", "", value)}
-                          >
-                            <SelectTrigger className="border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {fontOptions.map((font) => (
-                                <SelectItem key={font.value} value={font.value}>
-                                  <span style={{ fontFamily: font.value }}>{font.label}</span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Tamanhos de Fonte */}
-                        <div className="space-y-4">
-                          <Label className="text-cinza-texto">Tamanhos de Fonte</Label>
-                          {Object.entries(settings.typography.fontSize).map(([key, value]) => (
-                            <div key={key} className="flex items-center gap-3">
-                              <Label className="w-16 text-sm text-cinza-secundario capitalize">
-                                {key}
-                              </Label>
-                              <Input
-                                type="text"
-                                value={value}
-                                onChange={(e) => handleTypographyChange("fontSize", key, e.target.value)}
-                                className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro font-mono text-sm"
-                                placeholder="1rem"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Pesos de Fonte */}
-                        <div className="space-y-4">
-                          <Label className="text-cinza-texto">Pesos de Fonte</Label>
-                          {Object.entries(settings.typography.fontWeight).map(([key, value]) => (
-                            <div key={key} className="flex items-center gap-3">
-                              <Label className="w-16 text-sm text-cinza-secundario capitalize">
-                                {key}
-                              </Label>
-                              <Slider
-                                value={[value]}
-                                onValueChange={([newValue]) => handleTypographyChange("fontWeight", key, newValue)}
-                                min={100}
-                                max={900}
-                                step={100}
-                                className="flex-1"
-                              />
-                              <span className="w-12 text-sm text-cinza-secundario">{value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Preview Tipografia */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto">Preview Tipografia</CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Visualize como a tipografia fica aplicada
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div 
-                          className="space-y-4"
-                          style={{ fontFamily: settings.typography.fontFamily }}
-                        >
-                          <div>
-                            <h1 style={{ 
-                              fontSize: settings.typography.fontSize.xxl,
-                              fontWeight: settings.typography.fontWeight.bold,
-                              marginBottom: "0.5rem"
-                            }}>
-                              Título Principal
-                            </h1>
-                            <h2 style={{ 
-                              fontSize: settings.typography.fontSize.xl,
-                              fontWeight: settings.typography.fontWeight.semibold,
-                              marginBottom: "0.5rem"
-                            }}>
-                              Subtítulo
-                            </h2>
-                            <p style={{ 
-                              fontSize: settings.typography.fontSize.base,
-                              fontWeight: settings.typography.fontWeight.normal,
-                              lineHeight: settings.typography.lineHeight.normal
-                            }}>
-                              Este é um parágrafo de exemplo usando as configurações de tipografia personalizadas.
-                            </p>
-                            <small style={{ 
-                              fontSize: settings.typography.fontSize.small,
-                              fontWeight: settings.typography.fontWeight.normal
-                            }}>
-                              Texto pequeno para legendas e observações.
-                            </small>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                {/* Aba Layout */}
-                <TabsContent value="layout" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Configurações de Layout */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto flex items-center gap-2">
-                          <Layout className="w-5 h-5" />
-                          Configurações de Layout
-                        </CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Ajuste espaçamentos, bordas e sombras
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {/* Border Radius */}
-                        <div className="space-y-4">
-                          <Label className="text-cinza-texto">Raio das Bordas</Label>
-                          {Object.entries(settings.layout.borderRadius).map(([key, value]) => (
-                            <div key={key} className="flex items-center gap-3">
-                              <Label className="w-16 text-sm text-cinza-secundario capitalize">
-                                {key}
-                              </Label>
-                              <Input
-                                type="text"
-                                value={value}
-                                onChange={(e) => updateSettings({
-                                  layout: {
-                                    ...settings.layout,
-                                    borderRadius: {
-                                      ...settings.layout.borderRadius,
-                                      [key]: e.target.value
-                                    }
-                                  }
-                                })}
-                                className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro font-mono text-sm"
-                                placeholder="0.5rem"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Espaçamentos */}
-                        <div className="space-y-4">
-                          <Label className="text-cinza-texto">Espaçamentos</Label>
-                          {Object.entries(settings.layout.spacing).map(([key, value]) => (
-                            <div key={key} className="flex items-center gap-3">
-                              <Label className="w-16 text-sm text-cinza-secundario uppercase">
-                                {key}
-                              </Label>
-                              <Input
-                                type="text"
-                                value={value}
-                                onChange={(e) => updateSettings({
-                                  layout: {
-                                    ...settings.layout,
-                                    spacing: {
-                                      ...settings.layout.spacing,
-                                      [key]: e.target.value
-                                    }
-                                  }
-                                })}
-                                className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro font-mono text-sm"
-                                placeholder="1rem"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Configurações de Ícones */}
-                        <div className="space-y-4">
-                          <Label className="text-cinza-texto">Ícones</Label>
-                          
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                              <Label className="w-24 text-sm text-cinza-secundario">Estilo</Label>
-                              <Select
-                                value={settings.icons.style}
-                                onValueChange={(value: 'outline' | 'filled' | 'duotone') => updateSettings({
-                                  icons: { ...settings.icons, style: value }
-                                })}
-                              >
-                                <SelectTrigger className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {iconStyleOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      <div className="flex items-center gap-2">
-                                        <option.icon className="w-4 h-4" />
-                                        {option.label}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <Label className="w-24 text-sm text-cinza-secundario">Espessura</Label>
-                              <Slider
-                                value={[settings.icons.strokeWidth]}
-                                onValueChange={([value]) => updateSettings({
-                                  icons: { ...settings.icons, strokeWidth: value }
-                                })}
-                                min={1}
-                                max={4}
-                                step={0.5}
-                                className="flex-1"
-                              />
-                              <span className="w-12 text-sm text-cinza-secundario">
-                                {settings.icons.strokeWidth}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Preview Layout */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-cinza-texto">Preview Layout</CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Visualize as configurações de layout aplicadas
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-4">
-                          {/* Cards com diferentes border radius */}
-                          <div className="space-y-2">
-                            <Label className="text-cinza-secundario text-sm">Border Radius</Label>
-                            <div className="flex gap-2">
-                              <div 
-                                className="p-3 bg-cinza-claro text-cinza-texto text-xs flex items-center justify-center"
-                                style={{ borderRadius: settings.layout.borderRadius.small }}
-                              >
-                                Small
-                              </div>
-                              <div 
-                                className="p-3 bg-cinza-claro text-cinza-texto text-xs flex items-center justify-center"
-                                style={{ borderRadius: settings.layout.borderRadius.medium }}
-                              >
-                                Medium
-                              </div>
-                              <div 
-                                className="p-3 bg-cinza-claro text-cinza-texto text-xs flex items-center justify-center"
-                                style={{ borderRadius: settings.layout.borderRadius.large }}
-                              >
-                                Large
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Espaçamentos */}
-                          <div className="space-y-2">
-                            <Label className="text-cinza-secundario text-sm">Espaçamentos</Label>
-                            <div className="space-y-1">
-                              {Object.entries(settings.layout.spacing).map(([key, value]) => (
-                                <div key={key} className="flex items-center gap-2">
-                                  <span className="text-xs text-cinza-secundario w-6 uppercase">{key}</span>
-                                  <div 
-                                    className="bg-verde-claro"
-                                    style={{ width: value, height: "8px", borderRadius: "2px" }}
-                                  />
-                                  <span className="text-xs text-cinza-secundario">{value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Preview de ícones */}
-                          <div className="space-y-2">
-                            <Label className="text-cinza-secundario text-sm">Ícones</Label>
-                            <div className="flex gap-2 items-center">
-                              <Star 
-                                className="text-cinza-texto"
-                                style={{ 
-                                  width: settings.icons.size.small,
-                                  height: settings.icons.size.small,
-                                  strokeWidth: settings.icons.strokeWidth
-                                }}
-                              />
-                              <Heart 
-                                className="text-cinza-texto"
-                                style={{ 
-                                  width: settings.icons.size.medium,
-                                  height: settings.icons.size.medium,
-                                  strokeWidth: settings.icons.strokeWidth
-                                }}
-                              />
-                              <Smile 
-                                className="text-cinza-texto"
-                                style={{ 
-                                  width: settings.icons.size.large,
-                                  height: settings.icons.size.large,
-                                  strokeWidth: settings.icons.strokeWidth
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                {/* Aba Transições */}
-                <TabsContent value="transitions" className="space-y-6">
-                  <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="text-cinza-texto flex items-center gap-2">
-                        <Zap className="w-5 h-5" />
-                        Configurações de Transições
-                      </CardTitle>
-                      <CardDescription className="text-cinza-secundario">
-                        Personalize as animações e transições do sistema
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Durações */}
-                      <div className="space-y-4">
-                        <Label className="text-cinza-texto">Durações</Label>
-                        {Object.entries(settings.transitions.duration).map(([key, value]) => (
-                          <div key={key} className="flex items-center gap-3">
-                            <Label className="w-16 text-sm text-cinza-secundario capitalize">
-                              {key}
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="dark" id="dark" />
+                            <Label htmlFor="dark" className="flex items-center gap-2">
+                              <Moon className="h-4 w-4" />
+                              Escuro
                             </Label>
-                            <Input
-                              type="text"
-                              value={value}
-                              onChange={(e) => updateSettings({
-                                transitions: {
-                                  ...settings.transitions,
-                                  duration: {
-                                    ...settings.transitions.duration,
-                                    [key]: e.target.value
-                                  }
-                                }
-                              })}
-                              className="flex-1 border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro font-mono text-sm"
-                              placeholder="300ms"
-                            />
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="system" id="system" />
+                            <Label htmlFor="system">Sistema</Label>
+                          </div>
+                        </RadioGroup>
+                      </CardContent>
+                    </Card>
 
-                      {/* Timing Function */}
-                      <div className="space-y-2">
-                        <Label className="text-cinza-texto">Função de Timing</Label>
-                        <Select
-                          value={settings.transitions.timing}
-                          onValueChange={(value) => updateSettings({
-                            transitions: { ...settings.transitions, timing: value }
-                          })}
-                        >
-                          <SelectTrigger className="border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro">
+                    {/* Esquema de Cores */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Palette className="h-5 w-5" />
+                          Esquema de Cores
+                        </CardTitle>
+                        <CardDescription>
+                          Personalize as cores principais da interface
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-3">
+                          {colorSchemes.map((scheme) => (
+                            <div
+                              key={scheme.value}
+                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                colorScheme === scheme.value
+                                  ? "border-primary bg-accent"
+                                  : "border-border hover:border-muted-foreground"
+                              }`}
+                              onClick={() => setColorScheme(scheme.value)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-6 h-6 rounded-full"
+                                  style={{ backgroundColor: scheme.color }}
+                                />
+                                <span className="font-medium">{scheme.label}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Densidade */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Layout className="h-5 w-5" />
+                          Densidade da Interface
+                        </CardTitle>
+                        <CardDescription>
+                          Ajuste o espaçamento entre elementos
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <RadioGroup value={density} onValueChange={setDensity}>
+                          {densityOptions.map((option) => (
+                            <div key={option.value} className="flex items-center space-x-2">
+                              <RadioGroupItem value={option.value} id={option.value} />
+                              <div className="flex-1">
+                                <Label htmlFor={option.value} className="font-medium">
+                                  {option.label}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                  {option.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="typography" className="space-y-6">
+                    {/* Família da Fonte */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Type className="h-5 w-5" />
+                          Família da Fonte
+                        </CardTitle>
+                        <CardDescription>
+                          Escolha a fonte principal da interface
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Select value={fontFamily} onValueChange={setFontFamily}>
+                          <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ease">Ease</SelectItem>
-                            <SelectItem value="ease-in">Ease In</SelectItem>
-                            <SelectItem value="ease-out">Ease Out</SelectItem>
-                            <SelectItem value="ease-in-out">Ease In Out</SelectItem>
-                            <SelectItem value="linear">Linear</SelectItem>
-                            <SelectItem value="cubic-bezier(0.4, 0, 0.2, 1)">Cubic Bezier</SelectItem>
+                            {fontOptions.map((font) => (
+                              <SelectItem key={font.value} value={font.value}>
+                                <div>
+                                  <div className="font-medium">{font.label}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {font.description}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </CardContent>
+                    </Card>
 
-                      {/* Preview de Transições */}
-                      <div className="space-y-4">
-                        <Label className="text-cinza-texto">Preview</Label>
-                        <div className="flex gap-4">
-                          <div 
-                            className="w-16 h-16 bg-verde-folha rounded cursor-pointer hover:scale-110 hover:rotate-12"
-                            style={{
-                              transition: `transform ${settings.transitions.duration.normal} ${settings.transitions.timing}`
-                            }}
-                          />
-                          <div 
-                            className="w-16 h-16 bg-laranja-alerta rounded cursor-pointer hover:bg-opacity-70"
-                            style={{
-                              transition: `background-color ${settings.transitions.duration.normal} ${settings.transitions.timing}`
-                            }}
-                          />
-                          <div 
-                            className="w-16 h-16 bg-cinza-claro border-2 border-transparent rounded cursor-pointer hover:border-verde-folha"
-                            style={{
-                              transition: `border-color ${settings.transitions.duration.normal} ${settings.transitions.timing}`
-                            }}
-                          />
-                        </div>
-                        <p className="text-sm text-cinza-secundario">
-                          Passe o mouse sobre os elementos para ver as transições
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Aba Gerenciar */}
-                <TabsContent value="export" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Exportar/Importar */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
+                    {/* Tamanho da Fonte */}
+                    <Card>
                       <CardHeader>
-                        <CardTitle className="text-cinza-texto flex items-center gap-2">
-                          <Settings className="w-5 h-5" />
-                          Gerenciar Configurações
+                        <CardTitle>Tamanho da Fonte</CardTitle>
+                        <CardDescription>
+                          Ajuste o tamanho base da fonte (atual: {fontSize}px)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <Slider
+                            value={[fontSize]}
+                            onValueChange={(value) => setFontSize(value[0])}
+                            max={20}
+                            min={12}
+                            step={1}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>12px</span>
+                            <span>16px</span>
+                            <span>20px</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="behavior" className="space-y-6">
+                    {/* Animações */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Zap className="h-5 w-5" />
+                          Animações
                         </CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Exporte, importe ou restaure suas configurações
+                        <CardDescription>
+                          Controle as animações da interface
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <Button
-                          onClick={handleExportSettings}
-                          className="w-full bg-verde-folha hover:bg-verde-folha/90 text-white"
-                        >
-                          <Copy className="mr-2 h-4 w-4" />
-                          Exportar Configurações
-                        </Button>
-
-                        <div className="space-y-2">
-                          <Label className="text-cinza-texto">Importar Configurações</Label>
-                          <Input
-                            type="file"
-                            accept=".json"
-                            onChange={handleImportSettings}
-                            className="border-borda-sutil focus:border-verde-folha focus:ring-verde-folha/20 bg-branco-puro"
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="animations" className="font-medium">
+                              Habilitar animações
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Transições suaves e efeitos visuais
+                            </p>
+                          </div>
+                          <Switch
+                            id="animations"
+                            checked={animations}
+                            onCheckedChange={setAnimations}
                           />
                         </div>
-
-                        <Separator />
-
-                        <Button
-                          onClick={handleResetSettings}
-                          variant="outline"
-                          className="w-full border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <RotateCcw className="mr-2 h-4 w-4" />
-                          Restaurar Padrão
-                        </Button>
                       </CardContent>
                     </Card>
+                  </TabsContent>
 
-                    {/* Informações */}
-                    <Card className="bg-branco-puro border-borda-sutil shadow-sm">
+                  <TabsContent value="accessibility" className="space-y-6">
+                    {/* Contraste */}
+                    <Card>
                       <CardHeader>
-                        <CardTitle className="text-cinza-texto">Informações</CardTitle>
-                        <CardDescription className="text-cinza-secundario">
-                          Detalhes sobre as configurações visuais
+                        <CardTitle className="flex items-center gap-2">
+                          <Eye className="h-5 w-5" />
+                          Contraste
+                        </CardTitle>
+                        <CardDescription>
+                          Ajuste o contraste para melhor legibilidade
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-cinza-secundario">Tema Atual:</span>
-                            <span className="text-cinza-texto capitalize">{theme}</span>
+                      <CardContent>
+                        <RadioGroup value={contrast} onValueChange={setContrast}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="normal" id="normal" />
+                            <Label htmlFor="normal">Normal</Label>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-cinza-secundario">Fonte:</span>
-                            <span className="text-cinza-texto">{settings.typography.fontFamily}</span>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="high" id="high" />
+                            <Label htmlFor="high">Alto contraste</Label>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-cinza-secundario">Cor Primária:</span>
-                            <div className="flex items-center gap-2">
-                              <div 
-                                className="w-4 h-4 rounded border"
-                                style={{ backgroundColor: currentColors.primary }}
-                              />
-                              <span className="text-cinza-texto font-mono text-xs">
-                                {currentColors.primary}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-cinza-secundario">Transição:</span>
-                            <span className="text-cinza-texto">{settings.transitions.duration.normal}</span>
-                          </div>
-                        </div>
-
-                        <Separator />
-
-                        <Alert className="bg-blue-50 border-blue-200">
-                          <AlertCircle className="h-4 w-4 text-blue-600" />
-                          <AlertDescription className="text-blue-800">
-                            <strong>Dica:</strong> Use o modo Preview para ver como as alterações ficam aplicadas no sistema antes de salvar.
-                          </AlertDescription>
-                        </Alert>
+                        </RadioGroup>
                       </CardContent>
                     </Card>
-                  </div>
-                </TabsContent>
-              </Tabs>
+
+                    {/* Informações de Acessibilidade */}
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        O MonitorAgro segue as diretrizes WCAG 2.1 para garantir acessibilidade.
+                        Todas as configurações são salvas automaticamente.
+                      </AlertDescription>
+                    </Alert>
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              {/* Preview */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      Preview
+                    </CardTitle>
+                    <CardDescription>
+                      Visualize as mudanças em tempo real
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <Select value={selectedComponent} onValueChange={setSelectedComponent}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="button">Botões</SelectItem>
+                          <SelectItem value="card">Cards</SelectItem>
+                          <SelectItem value="form">Formulários</SelectItem>
+                          <SelectItem value="navigation">Navegação</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <div className="p-4 border rounded-lg bg-background">
+                        {componentPreviews[selectedComponent as keyof typeof componentPreviews]}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Status das Configurações */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Status</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Tema</span>
+                      <Badge variant="secondary">{theme}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Fonte</span>
+                      <Badge variant="secondary">{fontSize}px</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Animações</span>
+                      <Badge variant={animations ? "default" : "secondary"}>
+                        {animations ? "Ativas" : "Desativadas"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Densidade</span>
+                      <Badge variant="secondary">{density}</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }
