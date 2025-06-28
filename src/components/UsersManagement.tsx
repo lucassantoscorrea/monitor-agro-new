@@ -1,29 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Switch } from "./ui/switch";
+import { Textarea } from "./ui/textarea";
+import { Separator } from "./ui/separator";
+import { ScrollArea } from "./ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { BarChart3, FileText, Settings, Users, Package, UserPlus, Edit, Trash2, Shield, Mail, CheckCircle, X, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
-import logoImage from 'figma:asset/aa6dfb22a361d25713cba631ca17f4edeae6d718.png';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "admin" | "manager" | "user" | "viewer";
-  status: "active" | "inactive" | "pending";
-  joinedDate: string;
-  lastActivity: string;
-}
+import { BarChart3, FileText, Settings, Users, Package, UserPlus, Edit, Trash2, Shield, Mail, CheckCircle, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 interface UsersManagementProps {
   onLogout: () => void;
@@ -31,599 +26,510 @@ interface UsersManagementProps {
   activeSection: string;
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "viewer";
+  status: "active" | "inactive" | "pending";
+  lastLogin: string;
+  createdAt: string;
+  permissions: string[];
+}
+
 export function UsersManagement({ onLogout, onNavigateToSection, activeSection }: UsersManagementProps) {
-  // Estados
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentUserRole] = useState<string>("admin"); // Simula o papel do usuário atual
-  const [successMessage, setSuccessMessage] = useState("");
-  const [error, setError] = useState("");
-  
-  // Estados para modais
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Estados para formulários
-  const [inviteForm, setInviteForm] = useState({
-    name: "",
-    email: "",
-    role: "user"
-  });
-  
-  const [editForm, setEditForm] = useState({
-    name: "",
-    email: "",
-    role: "",
-    status: ""
-  });
-
-  const menuItems = [
-    { id: "dashboard", icon: BarChart3, label: "Dashboard" },
-    { id: "products", icon: Package, label: "Produtos Monitorados" },
-    { id: "reports", icon: FileText, label: "Relatórios" },
-    { id: "users", icon: Users, label: "Usuários" },
-    { id: "profile", icon: Settings, label: "Perfil" },
-  ];
-
-  // Mock data - simula usuários da organização
-  const mockUsers: User[] = [
+  const [users, setUsers] = useState<User[]>([
     {
       id: 1,
       name: "João Silva",
-      email: "joao.silva@agronegocios.com.br",
+      email: "joao@empresa.com",
       role: "admin",
       status: "active",
-      joinedDate: "10/01/2025",
-      lastActivity: "Há 2 horas"
+      lastLogin: "2024-01-15 14:30",
+      createdAt: "2023-06-15",
+      permissions: ["read", "write", "delete", "admin"]
     },
     {
       id: 2,
       name: "Maria Santos",
-      email: "maria.santos@agronegocios.com.br",
-      role: "manager",
+      email: "maria@empresa.com",
+      role: "user",
       status: "active",
-      joinedDate: "15/01/2025",
-      lastActivity: "Há 1 dia"
+      lastLogin: "2024-01-14 09:15",
+      createdAt: "2023-08-22",
+      permissions: ["read", "write"]
     },
     {
       id: 3,
-      name: "Pedro Oliveira",
-      email: "pedro.oliveira@agronegocios.com.br",
-      role: "user",
-      status: "active",
-      joinedDate: "20/01/2025",
-      lastActivity: "Há 3 horas"
+      name: "Pedro Costa",
+      email: "pedro@empresa.com",
+      role: "viewer",
+      status: "inactive",
+      lastLogin: "2024-01-10 16:45",
+      createdAt: "2023-11-03",
+      permissions: ["read"]
     },
     {
       id: 4,
-      name: "Ana Costa",
-      email: "ana.costa@agronegocios.com.br",
-      role: "viewer",
-      status: "inactive",
-      joinedDate: "25/01/2025",
-      lastActivity: "Há 1 semana"
-    },
-    {
-      id: 5,
-      name: "Carlos Ferreira",
-      email: "carlos.ferreira@agronegocios.com.br",
+      name: "Ana Oliveira",
+      email: "ana@empresa.com",
       role: "user",
       status: "pending",
-      joinedDate: "15/06/2025",
-      lastActivity:  "Nunca acessou"
+      lastLogin: "Nunca",
+      createdAt: "2024-01-12",
+      permissions: ["read", "write"]
     }
-  ];
+  ]);
 
-  // Simula carregamento dos usuários
-  useEffect(() => {
-    const loadUsers = async () => {
-      setIsLoading(true);
-      setError("");
-      
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        setUsers(mockUsers);
-      } catch (err) {
-        setError("Erro ao carregar usuários");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(false);
 
-    loadUsers();
-  }, []);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "user" as const,
+    permissions: [] as string[]
+  });
 
-  const canManageUsers = () => {
-    return currentUserRole === "admin" || currentUserRole === "manager";
-  };
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "Administrador";
-      case "manager":
-        return "Gerente";
-      case "user":
-        return "Usuário";
-      case "viewer":
-        return "Visualizador";
-      default:
-        return role;
-    }
-  };
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "bg-purple-100 text-purple-800 border-0";
-      case "manager":
-        return "bg-blue-100 text-blue-800 border-0";
-      case "user":
-        return "bg-verde-claro text-verde-folha border-0";
-      case "viewer":
-        return "bg-gray-100 text-gray-800 border-0";
-      default:
-        return "bg-gray-100 text-gray-800 border-0";
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-verde-claro text-verde-folha border-0">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Ativo
-          </Badge>
-        );
-      case "inactive":
-        return (
-          <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-0">
-            <EyeOff className="w-3 h-3 mr-1" />
-            Inativo
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-0">
-            <Mail className="w-3 h-3 mr-1" />
-            Pendente
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(""), 3000);
-  };
-
-  const handleInviteUser = async () => {
-    if (!inviteForm.name.trim() || !inviteForm.email.trim()) {
-      setError("Preencha todos os campos obrigatórios");
-      return;
-    }
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === "all" || user.role === filterRole;
+    const matchesStatus = filterStatus === "all" || user.status === filterStatus;
     
-    if (!inviteForm.email.includes("@")) {
-      setError("E-mail inválido");
-      return;
-    }
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
-    setIsSubmitting(true);
+  const handleAddUser = async () => {
+    setIsLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simula chamada para API
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const newUser: User = {
+      const user: User = {
         id: users.length + 1,
-        name: inviteForm.name,
-        email: inviteForm.email,
-        role: inviteForm.role as User['role'],
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
         status: "pending",
-        joinedDate: new Date().toLocaleDateString("pt-BR"),
-        lastActivity: "Nunca acessou"
+        lastLogin: "Nunca",
+        createdAt: new Date().toISOString().split('T')[0],
+        permissions: newUser.permissions
       };
       
-      setUsers(prev => [...prev, newUser]);
-      setShowInviteModal(false);
-      setInviteForm({ name: "", email: "", role: "user" });
-      showSuccess("Convite enviado com sucesso");
+      setUsers([...users, user]);
+      setNewUser({ name: "", email: "", role: "user", permissions: [] });
+      setIsAddUserOpen(false);
       
-    } catch (err) {
-      setError("Erro ao enviar convite");
+    } catch (error) {
+      console.error("Erro ao adicionar usuário:", error);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setEditForm({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status
-    });
-    setShowEditModal(true);
-  };
-
-  const handleUpdateUser = async () => {
-    if (!editForm.name.trim() || !editForm.email.trim()) {
-      setError("Preencha todos os campos obrigatórios");
-      return;
-    }
-
-    setIsSubmitting(true);
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+    
+    setIsLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simula chamada para API
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setUsers(prev => prev.map(user => 
-        user.id === selectedUser?.id 
-          ? {
-              ...user,
-              name: editForm.name,
-              email: editForm.email,
-              role: editForm.role as User['role'],
-              status: editForm.status as User['status']
-            }
+      setUsers(users.map(user => 
+        user.id === selectedUser.id ? selectedUser : user
+      ));
+      
+      setIsEditUserOpen(false);
+      setSelectedUser(null);
+      
+    } catch (error) {
+      console.error("Erro ao editar usuário:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Simula chamada para API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setUsers(users.filter(user => user.id !== userId));
+      
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (userId: number) => {
+    setIsLoading(true);
+    
+    try {
+      // Simula chamada para API
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, status: user.status === "active" ? "inactive" : "active" as const }
           : user
       ));
       
-      setShowEditModal(false);
-      setSelectedUser(null);
-      showSuccess("Usuário atualizado com sucesso");
-      
-    } catch (err) {
-      setError("Erro ao atualizar usuário");
+    } catch (error) {
+      console.error("Erro ao alterar status do usuário:", error);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleRemoveUser = async (userId: number) => {
-    const user = users.find(u => u.id === userId);
-    if (!window.confirm(`Tem certeza que deseja remover ${user?.name}?`)) {
-      return;
-    }
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUsers(prev => prev.filter(user => user.id !== userId));
-      showSuccess("Usuário removido com sucesso");
-    } catch (err) {
-      setError("Erro ao remover usuário");
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "admin": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "user": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "viewer": return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
-  const handleToggleStatus = async (userId: number) => {
-    const user = users.find(u => u.id === userId);
-    const newStatus = user?.status === "active" ? "inactive" : "active";
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUsers(prev => prev.map(u => 
-        u.id === userId ? { ...u, status: newStatus as User['status'] } : u
-      ));
-      showSuccess(`Usuário ${newStatus === "active" ? "ativado" : "desativado"} com sucesso`);
-    } catch (err) {
-      setError("Erro ao alterar status do usuário");
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "inactive": return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
+
+  const availablePermissions = [
+    { id: "read", label: "Visualizar", description: "Pode visualizar dados e relatórios" },
+    { id: "write", label: "Editar", description: "Pode criar e editar produtos" },
+    { id: "delete", label: "Excluir", description: "Pode excluir produtos e dados" },
+    { id: "admin", label: "Administrador", description: "Acesso total ao sistema" }
+  ];
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-background">
-        <Sidebar className="border-r border-borda-sutil bg-branco-puro">
-          <div className="flex justify-center items-center p-6 border-b border-borda-sutil">
-            <ImageWithFallback
-              src={logoImage}
-              alt="MonitorAgro Logo"
-              className="h-14 w-auto"
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="flex h-16 items-center px-6">
+          <div className="flex items-center space-x-4">
+            <img 
+              src="/logo.png" 
+              alt="MonitorAgro" 
+              className="h-8 w-8"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
+            <div 
+              className="h-8 w-8 bg-verde-folha rounded-md items-center justify-center text-white font-semibold text-sm hidden"
+              style={{ display: 'none' }}
+            >
+              MA
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">MonitorAgro</h1>
+              <p className="text-sm text-muted-foreground">Gerenciamento de Usuários</p>
+            </div>
           </div>
           
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-cinza-secundario text-xs uppercase tracking-wider px-3 py-2">
-                Menu Principal
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="px-3">
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        onClick={() => onNavigateToSection(item.id)}
-                        isActive={activeSection === item.id}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                          activeSection === item.id
-                            ? "bg-verde-claro text-verde-folha"
-                            : "text-cinza-texto hover:bg-cinza-claro"
-                        }`}
-                      >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
+          <div className="ml-auto">
+            <Button onClick={onLogout} variant="outline">
+              Sair
+            </Button>
+          </div>
+        </div>
+      </header>
 
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 border-r bg-card h-[calc(100vh-4rem)]">
+          <nav className="p-4 space-y-2">
+            <Button
+              variant={activeSection === "dashboard" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("dashboard")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant={activeSection === "products" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("products")}
+            >
+              <Package className="mr-2 h-4 w-4" />
+              Produtos
+            </Button>
+            <Button
+              variant={activeSection === "reports" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("reports")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Relatórios
+            </Button>
+            <Button
+              variant="default"
+              className="w-full justify-start"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Usuários
+            </Button>
+            <Button
+              variant={activeSection === "profile" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onNavigateToSection("profile")}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Perfil
+            </Button>
+          </nav>
+        </aside>
 
-        </Sidebar>
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-branco-puro border-b border-borda-sutil px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="md:hidden" />
-                <div>
-                  <h1 className="text-cinza-texto">Gerenciar Usuários</h1>
-                  <p className="text-sm text-cinza-secundario">
-                    Gerencie os usuários da sua organização
-                  </p>
-                </div>
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Gerenciamento de Usuários</h2>
+                <p className="text-muted-foreground">
+                  Gerencie usuários, permissões e acessos do sistema
+                </p>
               </div>
-              {canManageUsers() && (
-                <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-verde-folha hover:bg-verde-folha/90 text-white shadow-sm">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Convidar Usuário
+              
+              <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Adicionar Usuário
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Novo Usuário</DialogTitle>
+                    <DialogDescription>
+                      Preencha as informações do novo usuário
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nome completo</Label>
+                      <Input
+                        id="name"
+                        value={newUser.name}
+                        onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                        placeholder="Nome do usuário"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={newUser.email}
+                        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                        placeholder="email@empresa.com"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Função</Label>
+                      <Select value={newUser.role} onValueChange={(value: "admin" | "user" | "viewer") => setNewUser({ ...newUser, role: value })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Visualizador</SelectItem>
+                          <SelectItem value="user">Usuário</SelectItem>
+                          <SelectItem value="admin">Administrador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Permissões</Label>
+                      <div className="space-y-2">
+                        {availablePermissions.map((permission) => (
+                          <div key={permission.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={permission.id}
+                              checked={newUser.permissions.includes(permission.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setNewUser({
+                                    ...newUser,
+                                    permissions: [...newUser.permissions, permission.id]
+                                  });
+                                } else {
+                                  setNewUser({
+                                    ...newUser,
+                                    permissions: newUser.permissions.filter(p => p !== permission.id)
+                                  });
+                                }
+                              }}
+                              className="rounded border-gray-300"
+                            />
+                            <div>
+                              <Label htmlFor={permission.id} className="font-medium">
+                                {permission.label}
+                              </Label>
+                              <p className="text-sm text-muted-foreground">
+                                {permission.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 mt-6">
+                    <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                      Cancelar
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Convidar Novo Usuário</DialogTitle>
-                      <DialogDescription>
-                        Envie um convite para um novo usuário se juntar à organização
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Nome completo</Label>
-                        <Input
-                          value={inviteForm.name}
-                          onChange={(e) => setInviteForm(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Digite o nome completo"
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>E-mail</Label>
-                        <Input
-                          type="email"
-                          value={inviteForm.email}
-                          onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
-                          placeholder="Digite o e-mail"
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Permissão</Label>
-                        <Select
-                          value={inviteForm.role}
-                          onValueChange={(value) => setInviteForm(prev => ({ ...prev, role: value }))}
-                          disabled={isSubmitting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {currentUserRole === "admin" && (
-                              <SelectItem value="admin">Administrador</SelectItem>
-                            )}
-                            <SelectItem value="manager">Gerente</SelectItem>
-                            <SelectItem value="user">Usuário</SelectItem>
-                            <SelectItem value="viewer">Visualizador</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowInviteModal(false)}
-                        disabled={isSubmitting}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        onClick={handleInviteUser}
-                        disabled={isSubmitting}
-                        className="bg-verde-folha hover:bg-verde-folha/90 text-white"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Enviando...
-                          </>
-                        ) : (
-                          "Enviar Convite"
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              )}
+                    <Button onClick={handleAddUser} disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adicionando...
+                        </>
+                      ) : (
+                        "Adicionar"
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </header>
 
-          <main className="flex-1 overflow-y-auto p-6 bg-background">
-            {/* Mensagens de feedback */}
-            {successMessage && (
-              <div className="mb-6">
-                <Alert className="bg-green-50 border-green-200">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-700">
-                    {successMessage}
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-
-            {error && (
-              <div className="mb-6">
-                <Alert variant="destructive" className="bg-red-50 border-red-200">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-700">{error}</AlertDescription>
-                </Alert>
-              </div>
-            )}
-
-            {/* Aviso para usuários sem permissão */}
-            {!canManageUsers() && (
-              <div className="mb-6">
-                <Alert className="bg-yellow-50 border-yellow-200">
-                  <Shield className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-800">
-                    Você não tem permissão para gerenciar usuários. Entre em contato com o administrador.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-
-            {/* Cards de resumo */}
-            {!isLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm text-cinza-secundario font-medium">
-                      Total de Usuários
-                    </CardTitle>
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <Users className="h-4 w-4 text-blue-600" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold text-cinza-texto">{users.length}</div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm text-cinza-secundario font-medium">
-                      Usuários Ativos
-                    </CardTitle>
-                    <div className="p-2 bg-verde-claro rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-verde-folha" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold text-cinza-texto">
-                      {users.filter(u => u.status === "active").length}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm text-cinza-secundario font-medium">
-                      Convites Pendentes
-                    </CardTitle>
-                    <div className="p-2 bg-yellow-50 rounded-lg">
-                      <Mail className="h-4 w-4 text-yellow-600" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold text-cinza-texto">
-                      {users.filter(u => u.status === "pending").length}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-branco-puro border-borda-sutil shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm text-cinza-secundario font-medium">
-                      Administradores
-                    </CardTitle>
-                    <div className="p-2 bg-purple-50 rounded-lg">
-                      <Shield className="h-4 w-4 text-purple-600" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-semibold text-cinza-texto">
-                      {users.filter(u => u.role === "admin").length}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Tabela de usuários */}
-            <Card className="bg-branco-puro border-borda-sutil shadow-sm">
+            {/* Filtros */}
+            <Card className="mb-6">
               <CardHeader>
-                <CardTitle className="text-cinza-texto">Lista de Usuários</CardTitle>
-                <CardDescription className="text-cinza-secundario">
-                  {isLoading 
-                    ? "Carregando usuários..."
-                    : `${users.length} usuário${users.length !== 1 ? 's' : ''} na organização`
-                  }
+                <CardTitle>Filtros</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Buscar</Label>
+                    <Input
+                      id="search"
+                      placeholder="Nome ou email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="role-filter">Função</Label>
+                    <Select value={filterRole} onValueChange={setFilterRole}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="user">Usuário</SelectItem>
+                        <SelectItem value="viewer">Visualizador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="status-filter">Status</Label>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="active">Ativo</SelectItem>
+                        <SelectItem value="inactive">Inativo</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabela de Usuários */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Usuários ({filteredUsers.length})</CardTitle>
+                <CardDescription>
+                  Lista de todos os usuários do sistema
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="flex flex-col items-center gap-4">
-                      <Loader2 className="w-8 h-8 animate-spin text-verde-folha" />
-                      <p className="text-sm text-cinza-secundario">Carregando usuários...</p>
-                    </div>
-                  </div>
-                ) : users.length > 0 ? (
-                  <div className="rounded-lg border border-borda-sutil">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-cinza-claro/50">
-                          <TableHead className="text-cinza-texto font-medium">Nome</TableHead>
-                          <TableHead className="text-cinza-texto font-medium">E-mail</TableHead>
-                          <TableHead className="text-cinza-texto font-medium">Permissão</TableHead>
-                          <TableHead className="text-cinza-texto font-medium">Status</TableHead>
-                          <TableHead className="text-cinza-texto font-medium">Último Acesso</TableHead>
-                          {canManageUsers() && (
-                            <TableHead className="text-cinza-texto font-medium text-right">Ações</TableHead>
-                          )}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.id} className="hover:bg-cinza-claro/30 transition-colors">
-                            <TableCell className="font-medium text-cinza-texto">
-                              <div className="space-y-1">
-                                <div>{user.name}</div>
-                                <div className="text-xs text-cinza-secundario">
-                                  Membro desde {user.joinedDate}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-cinza-secundario">
-                              {user.email}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getRoleBadgeColor(user.role)}>
-                                <Shield className="w-3 h-3 mr-1" />
-                                {getRoleLabel(user.role)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(user.status)}
-                            </TableCell>
-                            <TableCell className="text-cinza-secundario text-sm">
-                              {user.lastActivity}
-                            </TableCell>
-                            {canManageUsers() && (
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  {user.status !== "pending" && (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Usuário</TableHead>
+                        <TableHead>Função</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Último Login</TableHead>
+                        <TableHead>Criado em</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getRoleColor(user.role)}>
+                              {user.role === "admin" ? "Administrador" : 
+                               user.role === "user" ? "Usuário" : "Visualizador"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(user.status)}>
+                              {user.status === "active" ? "Ativo" : 
+                               user.status === "inactive" ? "Inativo" : "Pendente"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {user.lastLogin}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                     <Button
-                                      variant="ghost"
+                                      variant="outline"
                                       size="sm"
-                                      onClick={() => handleToggleStatus(user.id)}
-                                      className="h-8 w-8 p-0 text-cinza-secundario hover:text-verde-folha hover:bg-verde-claro"
-                                      title={user.status === "active" ? "Desativar usuário" : "Ativar usuário"}
+                                      onClick={() => handleToggleUserStatus(user.id)}
+                                      disabled={isLoading}
                                     >
                                       {user.status === "active" ? (
                                         <EyeOff className="h-4 w-4" />
@@ -631,151 +537,152 @@ export function UsersManagement({ onLogout, onNavigateToSection, activeSection }
                                         <Eye className="h-4 w-4" />
                                       )}
                                     </Button>
-                                  )}
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditUser(user)}
-                                    className="h-8 w-8 p-0 text-cinza-secundario hover:text-blue-600 hover:bg-blue-50"
-                                    title="Editar usuário"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleRemoveUser(user.id)}
-                                    className="h-8 w-8 p-0 text-cinza-secundario hover:text-red-600 hover:bg-red-50"
-                                    title="Remover usuário"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 bg-cinza-claro rounded-full flex items-center justify-center">
-                        <Users className="w-8 h-8 text-cinza-secundario" />
-                      </div>
-                    </div>
-                    <h3 className="text-cinza-texto mb-2">Nenhum usuário encontrado</h3>
-                    <p className="text-sm text-cinza-secundario mb-6">
-                      Comece convidando usuários para sua organização
-                    </p>
-                    {canManageUsers() && (
-                      <Button 
-                        onClick={() => setShowInviteModal(true)}
-                        className="bg-verde-folha hover:bg-verde-folha/90 text-white shadow-sm"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Convidar Primeiro Usuário
-                      </Button>
-                    )}
-                  </div>
-                )}
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {user.status === "active" ? "Desativar" : "Ativar"}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setIsEditUserOpen(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id)}
+                                disabled={isLoading}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
-          </main>
-        </div>
-      </div>
 
-      {/* Modal de Edição */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Usuário</DialogTitle>
-            <DialogDescription>
-              Altere as informações e permissões do usuário
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nome completo</Label>
-              <Input
-                value={editForm.name}
-                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>E-mail</Label>
-              <Input
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Permissão</Label>
-              <Select
-                value={editForm.role}
-                onValueChange={(value) => setEditForm(prev => ({ ...prev, role: value }))}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentUserRole === "admin" && (
-                    <SelectItem value="admin">Administrador</SelectItem>
-                  )}
-                  <SelectItem value="manager">Gerente</SelectItem>
-                  <SelectItem value="user">Usuário</SelectItem>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={editForm.status}
-                onValueChange={(value) => setEditForm(prev => ({ ...prev, status: value }))}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Dialog de Edição */}
+            <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Editar Usuário</DialogTitle>
+                  <DialogDescription>
+                    Altere as informações do usuário
+                  </DialogDescription>
+                </DialogHeader>
+                
+                {selectedUser && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-name">Nome completo</Label>
+                      <Input
+                        id="edit-name"
+                        value={selectedUser.name}
+                        onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-email">Email</Label>
+                      <Input
+                        id="edit-email"
+                        type="email"
+                        value={selectedUser.email}
+                        onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-role">Função</Label>
+                      <Select 
+                        value={selectedUser.role} 
+                        onValueChange={(value: "admin" | "user" | "viewer") => 
+                          setSelectedUser({ ...selectedUser, role: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Visualizador</SelectItem>
+                          <SelectItem value="user">Usuário</SelectItem>
+                          <SelectItem value="admin">Administrador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Permissões</Label>
+                      <div className="space-y-2">
+                        {availablePermissions.map((permission) => (
+                          <div key={permission.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`edit-${permission.id}`}
+                              checked={selectedUser.permissions.includes(permission.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    permissions: [...selectedUser.permissions, permission.id]
+                                  });
+                                } else {
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    permissions: selectedUser.permissions.filter(p => p !== permission.id)
+                                  });
+                                }
+                              }}
+                              className="rounded border-gray-300"
+                            />
+                            <div>
+                              <Label htmlFor={`edit-${permission.id}`} className="font-medium">
+                                {permission.label}
+                              </Label>
+                              <p className="text-sm text-muted-foreground">
+                                {permission.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-end space-x-2 mt-6">
+                  <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleEditUser} disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      "Salvar"
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowEditModal(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleUpdateUser}
-              disabled={isSubmitting}
-              className="bg-verde-folha hover:bg-verde-folha/90 text-white"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar Alterações"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </SidebarProvider>
+        </main>
+      </div>
+    </div>
   );
 }
