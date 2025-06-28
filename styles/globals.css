@@ -1,0 +1,554 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  --font-family-sans: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* Modo Claro - Otimizado para contraste */
+  --background: #FAFAFA;
+  --foreground: #1F2937; /* Escurecido para melhor contraste */
+  --card: #ffffff;
+  --card-foreground: #1F2937;
+  --popover: #ffffff;
+  --popover-foreground: #1F2937;
+  --primary: #16803D; /* Verde mais escuro para melhor contraste */
+  --primary-foreground: #ffffff;
+  --secondary: #F8FAFC; /* Ligeiramente mais contrastante */
+  --secondary-foreground: #475569; /* Escurecido */
+  --muted: #F1F5F9; /* Melhor contraste */
+  --muted-foreground: #64748B; /* Mais contrastante */
+  --accent: #ECFDF5; /* Verde muito claro */
+  --accent-foreground: #065F46; /* Verde escuro para contraste */
+  --destructive: #DC2626; /* Vermelho mais contrastante */
+  --destructive-foreground: #ffffff;
+  --border: #D1D5DB; /* Mais visível */
+  --input: #F8FAFC;
+  --input-background: #ffffff;
+  --switch-background: #D1D5DB;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #16803D;
+  --chart-1: #16803D;
+  --chart-2: #059669;
+  --chart-3: #10B981;
+  --chart-4: #EA580C; /* Laranja mais contrastante */
+  --chart-5: #FB923C;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: #16803D;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ECFDF5;
+  --sidebar-accent-foreground: #065F46;
+  --sidebar-border: #D1D5DB;
+  --sidebar-ring: #16803D;
+  
+  /* Cores customizadas do MonitorAgro - Modo Claro Otimizado */
+  --verde-folha: #16803D; /* Mais escuro para melhor contraste */
+  --verde-claro: #ECFDF5; /* Mais suave */
+  --cinza-texto: #1F2937; /* Mais escuro */
+  --cinza-secundario: #64748B; /* Mais contrastante */
+  --cinza-claro: #F8FAFC; /* Ligeiramente ajustado */
+  --branco-puro: #ffffff;
+  --laranja-alerta: #EA580C; /* Mais contrastante */
+  --borda-sutil: #D1D5DB; /* Mais visível */
+  
+  /* Estados hover e focus - Modo Claro */
+  --hover-overlay: rgba(22, 128, 61, 0.1);
+  --focus-ring: rgba(22, 128, 61, 0.3);
+  --success-bg: #DCFCE7;
+  --success-text: #166534;
+  --warning-bg: #FEF3C7;
+  --warning-text: #92400E;
+  --error-bg: #FEE2E2;
+  --error-text: #991B1B;
+  --info-bg: #DBEAFE;
+  --info-text: #1E40AF;
+}
+
+.dark {
+  /* Modo Escuro - Otimizado para contraste */
+  --background: #0F172A;
+  --foreground: #F8FAFC; /* Mais claro para melhor contraste */
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+  --primary: #22C55E; /* Verde mais brilhante */
+  --primary-foreground: #0F172A;
+  --secondary: #334155;
+  --secondary-foreground: #CBD5E1;
+  --muted: #374151; /* Mais contrastante */
+  --muted-foreground: #9CA3AF;
+  --accent: #1E3A2E; /* Verde escuro */
+  --accent-foreground: #22C55E;
+  --destructive: #EF4444;
+  --destructive-foreground: #ffffff;
+  --border: #475569; /* Mais visível */
+  --input: #374151;
+  --input-background: #1E293B;
+  --switch-background: #64748B;
+  --ring: #22C55E;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #22C55E;
+  --sidebar-primary-foreground: #0F172A;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #CBD5E1;
+  --sidebar-border: #475569;
+  --sidebar-ring: #22C55E;
+  
+  /* Cores customizadas do MonitorAgro - Modo Escuro Otimizado */
+  --verde-folha: #22C55E; /* Mais brilhante */
+  --verde-claro: #1E3A2E; /* Mais escuro */
+  --cinza-texto: #F8FAFC; /* Mais claro */
+  --cinza-secundario: #CBD5E1; /* Mantido */
+  --cinza-claro: #374151; /* Mais contrastante */
+  --branco-puro: #1E293B; /* Card background */
+  --laranja-alerta: #FB923C; /* Mantido */
+  --borda-sutil: #475569; /* Mais visível */
+  
+  /* Estados hover e focus - Modo Escuro */
+  --hover-overlay: rgba(34, 197, 94, 0.15);
+  --focus-ring: rgba(34, 197, 94, 0.4);
+  --success-bg: #1E3A2E;
+  --success-text: #22C55E;
+  --warning-bg: #451A03;
+  --warning-text: #FB923C;
+  --error-bg: #451A1A;
+  --error-text: #EF4444;
+  --info-bg: #1E293B;
+  --info-text: #60A5FA;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Classes utilitárias para as cores harmonizadas */
+  --color-verde-folha: var(--verde-folha);
+  --color-verde-claro: var(--verde-claro);
+  --color-cinza-texto: var(--cinza-texto);
+  --color-cinza-secundario: var(--cinza-secundario);
+  --color-cinza-claro: var(--cinza-claro);
+  --color-branco-puro: var(--branco-puro);
+  --color-laranja-alerta: var(--laranja-alerta);
+  --color-borda-sutil: var(--borda-sutil);
+  
+  /* Estados adicionais */
+  --color-hover-overlay: var(--hover-overlay);
+  --color-focus-ring: var(--focus-ring);
+  --color-success-bg: var(--success-bg);
+  --color-success-text: var(--success-text);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-text: var(--warning-text);
+  --color-error-bg: var(--error-bg);
+  --color-error-text: var(--error-text);
+  --color-info-bg: var(--info-bg);
+  --color-info-text: var(--info-text);
+  
+  /* Font family utilities */
+  --font-sans: var(--font-family-sans);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    font-size: 16px;
+    font-family: var(--font-family-sans);
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-family-sans);
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Smooth transitions for theme changes */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
+  /* Focus ring para acessibilidade */
+  *:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/**
+ * Base typography with Open Sans font optimizations
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-family: var(--font-family-sans);
+      font-size: 1.875rem;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      color: var(--foreground);
+    }
+
+    h2 {
+      font-family: var(--font-family-sans);
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.33;
+      letter-spacing: -0.025em;
+      color: var(--foreground);
+    }
+
+    h3 {
+      font-family: var(--font-family-sans);
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      color: var(--foreground);
+    }
+
+    h4 {
+      font-family: var(--font-family-sans);
+      font-size: 1.125rem;
+      font-weight: 600;
+      line-height: 1.44;
+      letter-spacing: -0.01em;
+      color: var(--foreground);
+    }
+
+    p {
+      font-family: var(--font-family-sans);
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.6;
+      letter-spacing: 0;
+      color: var(--foreground);
+    }
+
+    label {
+      font-family: var(--font-family-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.43;
+      letter-spacing: 0;
+      color: var(--foreground);
+    }
+
+    button {
+      font-family: var(--font-family-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.43;
+      letter-spacing: 0;
+    }
+
+    input, textarea, select {
+      font-family: var(--font-family-sans);
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.43;
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+      color: var(--foreground);
+    }
+
+    /* Specific styles for better Open Sans rendering */
+    small {
+      font-family: var(--font-family-sans);
+      font-size: 0.75rem;
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: 0;
+      color: var(--muted-foreground);
+    }
+
+    strong, b {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    /* Code and monospace elements */
+    code, kbd, samp, pre {
+      font-family: 'Fira Code', 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+      padding: 0.125rem 0.25rem;
+      border-radius: 0.25rem;
+    }
+  }
+}
+
+/* Font weight utilities for Open Sans */
+@layer utilities {
+  .font-open-sans {
+    font-family: var(--font-family-sans);
+  }
+
+  .font-tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-proportional-nums {
+    font-variant-numeric: proportional-nums;
+  }
+
+  /* Open Sans specific font weights */
+  .font-light {
+    font-weight: 300;
+  }
+
+  .font-normal {
+    font-weight: 400;
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+
+  .font-semibold {
+    font-weight: 600;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  .font-extrabold {
+    font-weight: 800;
+  }
+
+  /* Open Sans italic variants */
+  .italic {
+    font-style: italic;
+  }
+
+  /* Utilitários para as cores harmonizadas - Otimizados */
+  .text-verde-folha {
+    color: var(--verde-folha);
+  }
+  
+  .text-cinza-texto {
+    color: var(--cinza-texto);
+  }
+  
+  .text-cinza-secundario {
+    color: var(--cinza-secundario);
+  }
+  
+  .text-laranja-alerta {
+    color: var(--laranja-alerta);
+  }
+  
+  .bg-verde-folha {
+    background-color: var(--verde-folha);
+  }
+  
+  .bg-verde-claro {
+    background-color: var(--verde-claro);
+  }
+  
+  .bg-cinza-claro {
+    background-color: var(--cinza-claro);
+  }
+  
+  .bg-branco-puro {
+    background-color: var(--branco-puro);
+  }
+  
+  .bg-laranja-alerta {
+    background-color: var(--laranja-alerta);
+  }
+  
+  .border-verde-folha {
+    border-color: var(--verde-folha);
+  }
+  
+  .border-borda-sutil {
+    border-color: var(--borda-sutil);
+  }
+  
+  /* Estados de hover otimizados */
+  .hover\:bg-verde-folha\/90:hover {
+    background-color: color-mix(in srgb, var(--verde-folha) 90%, transparent);
+  }
+  
+  .hover\:bg-verde-claro:hover {
+    background-color: var(--verde-claro);
+  }
+  
+  .hover\:bg-cinza-claro:hover {
+    background-color: var(--cinza-claro);
+  }
+  
+  /* Utilitários para estados de mensagem */
+  .alert-success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border-color: var(--success-text);
+  }
+  
+  .alert-warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-text);
+  }
+  
+  .alert-error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--error-text);
+  }
+  
+  .alert-info {
+    background-color: var(--info-bg);
+    color: var(--info-text);
+    border-color: var(--info-text);
+  }
+  
+  /* Utilitários de contraste melhorado */
+  .high-contrast-text {
+    color: var(--foreground);
+    font-weight: 500;
+  }
+  
+  .medium-contrast-text {
+    color: var(--muted-foreground);
+  }
+  
+  .low-contrast-text {
+    color: color-mix(in srgb, var(--foreground) 60%, transparent);
+  }
+  
+  /* Bordas com melhor visibilidade */
+  .border-visible {
+    border-color: var(--border);
+    border-width: 1px;
+  }
+  
+  .border-subtle {
+    border-color: var(--borda-sutil);
+    border-width: 1px;
+  }
+  
+  /* Estados de focus melhorados */
+  .focus-ring {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  
+  .focus-ring-inset {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+}
+
+/* Optimize font rendering across different browsers */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Melhorias de acessibilidade */
+@layer base {
+  /* Reduced motion para usuários que preferem menos animação */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* High contrast para melhor acessibilidade */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: #000000;
+      --foreground: #000000;
+    }
+    
+    .dark {
+      --border: #ffffff;
+      --foreground: #ffffff;
+    }
+  }
+  
+  /* Focus trap para navegação por teclado */
+  .focus-trap {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Specific Open Sans optimizations */
+@layer base {
+  /* Open Sans performs well at all sizes without special adjustments */
+  * {
+    font-feature-settings: normal;
+  }
+  
+  /* Optimize readability for longer texts */
+  p, article, section {
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Ensure consistent line heights across different elements */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+  }
+}
