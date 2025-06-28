@@ -13,7 +13,7 @@ import { Switch } from "./ui/switch";
 import { Separator } from "./ui/separator";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { BarChart3, FileText, Settings, Users, Package, Palette, Type, Eye, Download, Upload, RotateCcw, CheckCircle, AlertCircle, Copy, RefreshCw, Sliders, Layout, Zap, CircleIcon, Square, Triangle, Star, Heart, Smile } from "lucide-react";
+import { BarChart3, FileText, Settings, Users, Package, Palette, Type, Eye, Download, Upload, RotateCcw, CheckCircle, AlertCircle, Copy, RefreshCw, Sliders, Layout, Zap, CircleIcon, Square, Triangle, Star, Heart, Smile, Sun, Moon } from "lucide-react";
 import logoImage from 'figma:asset/aa6dfb22a361d25713cba631ca17f4edeae6d718.png';
 import { useVisualSettings } from "./VisualSettingsContext";
 import { useTheme } from "./ThemeContext";
@@ -26,7 +26,7 @@ interface VisualSettingsProps {
 
 export function VisualSettings({ onLogout, onNavigateToSection, activeSection }: VisualSettingsProps) {
   const { settings, updateSettings, resetToDefault, exportSettings, importSettings } = useVisualSettings();
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("colors");
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
@@ -127,6 +127,20 @@ export function VisualSettings({ onLogout, onNavigateToSection, activeSection }:
     { value: "filled", label: "Preenchido", icon: Square },
     { value: "duotone", label: "Duotone", icon: Triangle },
   ];
+
+  const colorLabels = {
+    primary: "Cor Primária",
+    secondary: "Cor Secundária", 
+    accent: "Cor de Destaque",
+    background: "Fundo",
+    foreground: "Texto Principal",
+    muted: "Texto Secundário",
+    border: "Bordas",
+    success: "Sucesso",
+    warning: "Aviso",
+    error: "Erro",
+    info: "Informação"
+  };
 
   return (
     <SidebarProvider>
@@ -247,6 +261,88 @@ export function VisualSettings({ onLogout, onNavigateToSection, activeSection }:
                 {/* Aba Cores */}
                 <TabsContent value="colors" className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Seletor de Tema */}
+                    <Card className="bg-branco-puro border-borda-sutil shadow-sm lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle className="text-cinza-texto flex items-center gap-2">
+                          <Palette className="w-5 h-5" />
+                          Tema do Sistema
+                        </CardTitle>
+                        <CardDescription className="text-cinza-secundario">
+                          Escolha entre o modo claro ou escuro
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Modo Claro */}
+                          <div 
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              theme === "light" 
+                                ? "border-verde-folha bg-verde-claro/30" 
+                                : "border-borda-sutil hover:border-verde-folha/50"
+                            }`}
+                            onClick={() => setTheme("light")}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="p-2 bg-yellow-100 rounded-lg">
+                                <Sun className="w-5 h-5 text-yellow-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium text-cinza-texto">Modo Claro</h3>
+                                <p className="text-sm text-cinza-secundario">Tema padrão com cores claras</p>
+                              </div>
+                              {theme === "light" && (
+                                <CheckCircle className="w-5 h-5 text-verde-folha ml-auto flex-shrink-0" />
+                              )}
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-3 h-3 bg-verde-folha rounded-full"></div>
+                                <div className="w-16 h-2 bg-gray-200 rounded"></div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="w-full h-2 bg-gray-100 rounded"></div>
+                                <div className="w-3/4 h-2 bg-gray-100 rounded"></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Modo Escuro */}
+                          <div 
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              theme === "dark" 
+                                ? "border-verde-folha bg-verde-claro/30" 
+                                : "border-borda-sutil hover:border-verde-folha/50"
+                            }`}
+                            onClick={() => setTheme("dark")}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="p-2 bg-slate-800 rounded-lg">
+                                <Moon className="w-5 h-5 text-slate-300" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium text-cinza-texto">Modo Escuro</h3>
+                                <p className="text-sm text-cinza-secundario">Ideal para ambientes com pouca luz</p>
+                              </div>
+                              {theme === "dark" && (
+                                <CheckCircle className="w-5 h-5 text-verde-folha ml-auto flex-shrink-0" />
+                              )}
+                            </div>
+                            <div className="bg-slate-800 border border-slate-700 rounded p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                                <div className="w-16 h-2 bg-slate-600 rounded"></div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="w-full h-2 bg-slate-700 rounded"></div>
+                                <div className="w-3/4 h-2 bg-slate-700 rounded"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     {/* Cores Principais */}
                     <Card className="bg-branco-puro border-borda-sutil shadow-sm">
                       <CardHeader>
@@ -261,18 +357,8 @@ export function VisualSettings({ onLogout, onNavigateToSection, activeSection }:
                       <CardContent className="space-y-4">
                         {Object.entries(currentColors).map(([key, value]) => (
                           <div key={key} className="space-y-2">
-                            <Label className="text-cinza-texto capitalize">
-                              {key === "primary" && "Cor Primária"}
-                              {key === "secondary" && "Cor Secundária"}
-                              {key === "accent" && "Cor de Destaque"}
-                              {key === "background" && "Fundo"}
-                              {key === "foreground" && "Texto Principal"}
-                              {key === "muted" && "Texto Secundário"}
-                              {key === "border" && "Bordas"}
-                              {key === "success" && "Sucesso"}
-                              {key === "warning" && "Aviso"}
-                              {key === "error" && "Erro"}
-                              {key === "info" && "Informação"}
+                            <Label className="text-cinza-texto">
+                              {colorLabels[key as keyof typeof colorLabels] || key}
                             </Label>
                             <div className="flex items-center gap-3">
                               <Input

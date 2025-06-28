@@ -290,7 +290,7 @@ export function VisualSettingsProvider({ children }: { children: ReactNode }) {
 export function useVisualSettings() {
   const context = useContext(VisualSettingsContext);
   if (context === undefined) {
-    throw new Error("useVisualSettings must be used within a VisualSettingsProvider");
+    throw new error("useVisualSettings must be used within a VisualSettingsProvider");
   }
   return context;
 }
